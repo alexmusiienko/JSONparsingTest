@@ -9,35 +9,32 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
 class MyObject {
 
-    String id;
-    String externalId;
-    double longitude;
-    double latitude;
-    double altitude;
-    int rank;
+    int id;
+    String survey;
+    String description;
+
+
 
     MyObject(JSONObject json) throws JSONException {
-        id = json.getString("id");
-        externalId = json.getString("external_id");
-        longitude = json.getDouble("longitude");
-        latitude = json.getDouble("latitude");
-        altitude = json.getDouble("altitude");
-        rank = json.getInt("rank");
+        id = json.getInt("idSurvey");
+        survey = json.getString("survey");
+        description = json.getString("description");
+
     }
 
     @Override
     public String toString() {
-        return "id : " + id + "\n" +
-                "externalID : " + externalId + "\n" +
-                "longitude : " + longitude + "\n" +
-                "latitude : " + latitude + "\n" +
-                "altitude : " + altitude + "\n" +
-                "rank : " + rank;
+        return "id: " + id + "\n" +
+                "survey: " + survey + "\n" +
+                "description: " + description;
     }
 }
 
@@ -45,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
 
     TextView textView;
     Button showTextButton;
-    private static String url = "http://samples.openweathermap.org/data/3.0/stations?appid=b1b15e88fa797225412429c1c50c122a1";
+    private static  String url = "http://192.168.1.107:9090/api/tests/info";
     private String TAG = MainActivity.class.getSimpleName();
 
     @Override
@@ -66,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
 
     private class GetWeather extends AsyncTask<Void, Void, Void> {
 
-        MyObject myObject;
+        ArrayList<MyObject> objects = new ArrayList<>();
 
         @Override
         protected Void doInBackground(Void... arg0) {
@@ -77,9 +74,11 @@ public class MainActivity extends AppCompatActivity {
             if (jsonStr != null) {
                 try {
 
-                    JSONObject c = new JSONObject(jsonStr);
-                    myObject = new MyObject(c);
-
+                    JSONArray c = new JSONArray(jsonStr);
+                    for(int i = 0; i < c.length(); i++) {
+                        MyObject obj = new MyObject(c.getJSONObject(i));
+                        objects.add(obj);
+                    }
                 } catch (final JSONException e) {
                     Log.e(TAG, "Json parsing error: " + e.getMessage());
                     runOnUiThread(new Runnable() {
@@ -112,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void result) {
-            textView.setText(myObject.toString());
+            textView.setText(objects.toString());
         }
 
 
